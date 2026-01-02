@@ -12,7 +12,7 @@ start:
 ; Move to booted disk to BOOTDISK
 mov [BOOTDISK], dl
 ; Set all of the segments to 0
-mov ax, 0
+xor ax, ax
 mov ds, ax
 mov es, ax
 mov ss, ax
@@ -32,18 +32,12 @@ jne noextdrivefuncs
 and cx, 1
 je noextdrivefuncs
 ; Read the next sector on the drive
-mov ax, 0x07C0
-mov ds, ax
 mov ah, 0x42
 mov si, nextsectorDAP
 int 13h
-push ax
-mov ax, 0
-mov ds, ax
-pop ax
 jc couldntreaddrive
-; Loop for now
-jmp infloop
+; Jump to stage1
+jmp 0:0x7e00
 
 ; Print out an error for an invalid boot disk
 invalidbootdisk:
@@ -91,14 +85,19 @@ jmp infloop
 nextsectorDAP:
 db 0x10     ; Size of DAP, always 16 bytes
 db 0        ; Unused byte, should always be null
-dw 1        ; Number of sectors to be read
+dw 2        ; Number of sectors to be read
 dw 0x7e00   ; The offset where the data should be put
 dw 0        ; The segment where the data should be put
 dq 1        ; Which sector is our count starting from
 
 ; Imports
 %include "bootloader/print.asm"
-%include "bootloader/strings.asm"
+
+; Constants
+invalidbootdiskstr: db "Boot with a disk drive and not a floppy disk", 0
+noextdrivefuncsstr: db "Extended drive functions are not supported", 0
+couldntreaddrivestr: db "Couldn't read data from the drive", 0
+BOOTDISK: db 0
 
 ; Pad until the signature then add it
 times 510-($-$$) db 0
