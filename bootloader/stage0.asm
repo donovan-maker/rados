@@ -1,14 +1,8 @@
 [bits 16]
 [org 0x7c00]
 
-; Jump to the start
-jmp 0:start
-
-; FAT12 header
-times 62-($-$$) db 0
-
-; Start
-start:
+jmp 0:setcstozero
+setcstozero:
 ; Move to booted disk to BOOTDISK
 mov [BOOTDISK], dl
 ; Set all of the segments to 0
@@ -85,7 +79,7 @@ jmp infloop
 nextsectorDAP:
 db 0x10     ; Size of DAP, always 16 bytes
 db 0        ; Unused byte, should always be null
-dw 2        ; Number of sectors to be read
+dw 3        ; Number of sectors to be read
 dw 0x7e00   ; The offset where the data should be put
 dw 0        ; The segment where the data should be put
 dq 1        ; Which sector is our count starting from
