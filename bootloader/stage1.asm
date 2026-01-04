@@ -1,4 +1,4 @@
-[org 0x7e00]
+[bits 16]
 ; Read the amount of free memory (uses 32-bit registers)
 xor ax, ax
 mov es, ax
@@ -18,15 +18,7 @@ jc readmemerror
 cmp bx, 0
 je endmemregionread
 push bx
-; If it is a type 1 region add the size to the total memory
-mov eax, [readmembuffer+16]
-cmp eax, 1
-jne readmemregion
-mov eax, [readmembuffer+8]
-mov ecx, [totalmemory]
-add ecx, eax
-mov [totalmemory], ecx
-; And then move it to a buffer
+; If it is a type 1 region move it to a buffer
 mov ecx, [readmembuffercount]
 cmp ecx, 16
 je skipbufferadd
@@ -46,21 +38,8 @@ skipbufferadd:
 pop bx
 jmp readmemregion
 endmemregionread:
-; Print out the total free memory
-xor edx, edx
-mov eax, [totalmemory]
-mov ebx, 1024
-div ebx
-xor edx, edx
-div ebx
-mov ebx, 1
-add eax, ebx
-call printdec32
-mov si, MBstr
-call print
-; Disable the cursor
-mov ah, 1
-mov cx, 0x2000
+; Set the video mode to 12h
+mov ax, 0x0012
 int 10h
 ; Enter protected mode
 ; Disable interrupts
@@ -178,9 +157,6 @@ dq 0
 dd 0
 dd 0
 
-; Total memory
-totalmemory: dd 0
-
 ; Imports
 %include "bootloader/print.asm"
 %include "bootloader/gdt.asm"
@@ -191,9 +167,6 @@ MBstr: db "MB free", 0
 
 [bits 32]
 
-; Imports
-%include "bootloader/print32-64.asm"
-
 startprotectedmode:
 ; Set all of the data segments
 mov ax, dataseg
@@ -202,6 +175,15 @@ mov ss, ax
 mov es, ax
 mov fs, ax
 mov gs, ax
+; Check if the A20 line was enabled
+pushad
+mov edi,0x107c00
+mov esi,0x007c00
+mov [esi],esi
+mov [edi],edi
+cmpsd
+popad
+je a20failed
 ; Detect CPUID
 ; Set the CPUID flag
 pushfd
@@ -219,6 +201,10 @@ xor eax, ecx
 ; And if the flag did not change tell the user
 je nocpuid
 ; Detect long mode
+mov eax, 0x80000000
+cpuid
+cmp eax, 0x80000001
+jb nolongmode
 mov eax, 0x80000001
 cpuid
 test edx, 1<<29
@@ -255,47 +241,21 @@ mov [gdtdatadesc+6], byte 10101111b
 ; Jump to long mode
 jmp codeseg:startlongmode
 
-clearscreen:
-cld
-mov edi, 0xb8000
-mov ecx, 1000
-mov eax, 0x0f200f20
-rep stosd
-ret
+a20failed:
+jmp $
 
 nocpuid:
-call clearscreen
-mov ebx, 0xb8000
-mov esi, nocpuidstr
-call print32
 jmp $
 
 nolongmode:
-call clearscreen
-mov ebx, 0xb8000
-mov esi, nolongmodestr
-call print32
 jmp $
-
-; Strings
-nocpuidstr: db "No CPUID support", 0
-nolongmodestr: db "No long mode support", 0
 
 [bits 64]
+[extern _start]
 
 startlongmode:
-; Clear the screen
-mov edi, 0xb8000
-mov rax, 0x1f201f201f201f20
-mov rcx, 500
-rep stosq
-; Say that we are in 64 bit long mode
-mov rsi, bootedstr
-mov rbx, 0xb8000
-call print64
+; Jump to the kernel
+jmp _start
 jmp $
-
-; Strings
-bootedstr: db "Booted into Rados", 0
 
 times (512*3)-($-$$) db 0

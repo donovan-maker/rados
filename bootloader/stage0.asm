@@ -79,7 +79,7 @@ jmp infloop
 nextsectorDAP:
 db 0x10     ; Size of DAP, always 16 bytes
 db 0        ; Unused byte, should always be null
-dw 3        ; Number of sectors to be read
+dw 10       ; Number of sectors to be read
 dw 0x7e00   ; The offset where the data should be put
 dw 0        ; The segment where the data should be put
 dq 1        ; Which sector is our count starting from
