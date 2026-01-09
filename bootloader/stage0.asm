@@ -27,7 +27,8 @@ and cx, 1
 je noextdrivefuncs
 ; Read the next sector on the drive
 mov ah, 0x42
-mov si, nextsectorDAP
+mov si, kernelDAP
+mov dl, byte [BOOTDISK]
 int 13h
 jc couldntreaddrive
 ; Jump to stage1
@@ -75,12 +76,13 @@ cli
 hlt
 jmp infloop
 
-; DAP for the next sector
-nextsectorDAP:
+; DAP for the kernel
+align 16
+kernelDAP:
 db 0x10     ; Size of DAP, always 16 bytes
 db 0        ; Unused byte, should always be null
-dw 10       ; Number of sectors to be read
-dw 0x7e00   ; The offset where the data should be put
+dw 32       ; Number of sectors to be read
+dw 0x8000   ; The offset where the data should be put
 dw 0        ; The segment where the data should be put
 dq 1        ; Which sector is our count starting from
 
