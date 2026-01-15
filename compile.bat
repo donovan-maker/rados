@@ -1,4 +1,5 @@
-if not exist build mkdir build
+if exist build rm -rf build
+mkdir build
 
 nasm bootloader\stage0.asm -f bin -o build\stage0.bin
 nasm bootloader\stage1.asm -f bin -o build\stage1.bin
