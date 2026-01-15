@@ -1,3 +1,4 @@
+[org 0x7e00]
 [bits 16]
 ; Read the amount of free memory (uses 32-bit registers)
 xor ax, ax
@@ -163,7 +164,6 @@ dd 0
 
 ; Strings
 readmemerrorstr: db "Couldn't get the free memory regions properly", 0
-MBstr: db "MB free", 0
 
 [bits 32]
 
@@ -183,7 +183,12 @@ mov [esi],esi
 mov [edi],edi
 cmpsd
 popad
-je a20failed
+je longbooterror
+; Move the kernel to a better location
+mov esi, 0x00008400
+mov edi, 0x00100000
+mov ecx, (6*512)/4 ; CHANGE WHEN NEEDED
+rep movsd
 ; Detect CPUID
 ; Set the CPUID flag
 pushfd
@@ -199,16 +204,16 @@ push ecx
 popfd
 xor eax, ecx
 ; And if the flag did not change tell the user
-je nocpuid
+je longbooterror
 ; Detect long mode
 mov eax, 0x80000000
 cpuid
 cmp eax, 0x80000001
-jb nolongmode
+jb longbooterror
 mov eax, 0x80000001
 cpuid
 test edx, 1<<29
-je nolongmode
+je longbooterror
 ; Setup identity paging
 mov edi, 0x1000
 mov cr3, edi
@@ -241,21 +246,17 @@ mov [gdtdatadesc+6], byte 10101111b
 ; Jump to long mode
 jmp codeseg:startlongmode
 
-a20failed:
-jmp $
-
-nocpuid:
-jmp $
-
-nolongmode:
+longbooterror:
 jmp $
 
 [bits 64]
-[extern _start]
 
 startlongmode:
+; Set up the stack
+mov rsp, 0x90000
+mov rbp, rsp
 ; Jump to the kernel
-jmp _start
-jmp $
+mov rax, 0x100000
+jmp rax
 
 times (512*3)-($-$$) db 0
