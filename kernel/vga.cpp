@@ -64,3 +64,44 @@ void fillscreen(uint8_t color) {
         }
     }
 }
+
+template<typename T>
+T min(const T& a, const T& b) {
+    return (a < b) ? a : b;
+}
+
+template<typename T>
+T max(const T& a, const T& b) {
+    return (a > b) ? a : b;
+}
+
+void DrawSquareFast(int x1, int y1, int x2, int y2, uint8_t color) {
+    int left = min(x1, x2);
+    int right = max(x1, x2);
+    int top = min(y1, y2);
+    int bottom = max(y1, y2);
+    int leftByte = left >> 3;
+    int rightByte = right >> 3;
+    uint8_t leftMask  = 0xFF >> (left & 7);
+    uint8_t rightMask = 0xFF << (7 - (right & 7));
+    for (int plane = 0; plane < 4; plane++) {
+        setplane(plane);
+        uint8_t planeColor = (color & (1 << plane)) ? 0xFF : 0x00;
+        for (int y = top; y <= bottom; y++) {
+            uint16_t row = y * 80;
+            if (leftByte == rightByte) {
+                setbitmask(leftMask & rightMask);
+                VGA_MEMORY[row + leftByte] = planeColor;
+            } else {
+                setbitmask(leftMask);
+                VGA_MEMORY[row + leftByte] = planeColor;
+                setbitmask(0xFF);
+                for (int b = leftByte + 1; b < rightByte; b++)
+                    VGA_MEMORY[row + b] = planeColor;
+                setbitmask(rightMask);
+                VGA_MEMORY[row + rightByte] = planeColor;
+            }
+        }
+    }
+    setbitmask(0xFF);
+}
