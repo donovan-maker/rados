@@ -1,10 +1,4 @@
-#include "cpu/ports.cpp"
-
-#define VGA_GC_INDEX 0x3CE
-#define VGA_GC_DATA 0x3CF
-#define VGA_SC_INDEX 0x3C4
-#define VGA_SC_DATA 0x3C5
-#define VGA_MEMORY ((uint8_t*)0xA0000)
+#include "vga.hpp"
 
 void setupvga(void) {
     // Set/Reset = 0

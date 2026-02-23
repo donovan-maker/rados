@@ -189,7 +189,7 @@ je longbooterror
 ; Move the kernel to a better location
 mov esi, 0x00008200
 mov edi, 0x00100000
-mov ecx, (6*512)/4 ; CHANGE WHEN NEEDED
+mov ecx, (9*512)/4 ; CHANGE WHEN NEEDED
 rep movsd
 ; Detect CPUID
 ; Set the CPUID flag

@@ -1,4 +1,4 @@
-#include "vortexglib.cpp"
+#include "graphics/vortexglib.hpp"
 
 extern "C" void kmain() {
     setupvga();

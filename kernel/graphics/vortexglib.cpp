@@ -1,8 +1,6 @@
 // Modified from BreezeOS (https://github.com/atlassoftware-cpu/BreezeOS)
 
-#pragma once
-#include "font.h"
-#include "vga.cpp"
+#include "vortexglib.hpp"
 
 void fontchar(char c, size_t x, size_t y, uint8_t color) {
     const uint8_t *glyph = FONT[(uint8_t)c];
