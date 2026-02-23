@@ -1,4 +1,4 @@
-#include "ports.cpp"
+#include "cpu/ports.cpp"
 
 #define VGA_GC_INDEX 0x3CE
 #define VGA_GC_DATA 0x3CF

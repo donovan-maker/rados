@@ -1,5 +1,6 @@
 // Modified from BreezeOS (https://github.com/atlassoftware-cpu/BreezeOS)
 
+#pragma once
 #include "font.h"
 #include "vga.cpp"
 
