@@ -4,7 +4,7 @@
 jmp 0:setcstozero
 setcstozero:
 ; Move to booted disk to BOOTDISK
-mov [BOOTDISK], dl
+mov [BOOTDISK], byte dl
 ; Set all of the segments to 0
 xor ax, ax
 mov ds, ax
@@ -27,7 +27,7 @@ and cx, 1
 je noextdrivefuncs
 ; Read the next sector on the drive
 mov ah, 0x42
-mov si, kernelDAP
+lea si, [kernelDAP]
 mov dl, byte [BOOTDISK]
 int 13h
 jc couldntreaddrive
@@ -81,7 +81,7 @@ align 16
 kernelDAP:
 db 0x10     ; Size of DAP, always 16 bytes
 db 0        ; Unused byte, should always be null
-dw 19       ; Number of sectors to be read
+dw 8       ; Number of sectors to be read
 dw 0x7e00   ; The offset where the data should be put
 dw 0        ; The segment where the data should be put
 dq 1        ; Which sector is our count starting from

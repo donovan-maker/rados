@@ -1,3 +1,5 @@
+;; REMEMBER, THE SOURCE OF ALL PROBLEMS IS PROBABLY LINE 192
+
 [org 0x7e00]
 [bits 16]
 ; Read the amount of free memory (uses 32-bit registers)
@@ -185,7 +187,7 @@ cmpsd
 popad
 je longbooterror
 ; Move the kernel to a better location
-mov esi, 0x00008400
+mov esi, 0x00008200
 mov edi, 0x00100000
 mov ecx, (6*512)/4 ; CHANGE WHEN NEEDED
 rep movsd
@@ -259,4 +261,4 @@ mov rbp, rsp
 mov rax, 0x100000
 jmp rax
 
-times (512*3)-($-$$) db 0
+times (512*2)-($-$$) db 0
